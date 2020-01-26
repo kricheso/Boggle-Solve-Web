@@ -1,12 +1,13 @@
 const util = require("util");
-module.exports.findAllSolutions = findWords;
+// module.exports.findAllSolutions = findWords;
+// module.exports.generateTrie = generateTrie;
 
 // My Boggle solver is case sensitive. So 'Add' is treated as a different word from 'add'.
 
 class Node {
     constructor() {
         this.isValid = false;
-        this.children = new Object();
+        this.children = new Map();
     }
 }
 
@@ -35,16 +36,26 @@ class Trie {
     }
 }
 
-function findWords(grid, dictionaryArray) {
+export function findWords(grid, trie) {
     let result = new Set();
-    let trie = new Trie(dictionaryArray);
     let visited = createBooleanMatrix(grid, false);
     for(const [x, array] of grid.entries()) {
         for(const [y, tile] of Array.from(array).entries()) {
-            findWordsFrom(x, y, tile, grid, visited, trie.root, result);
+            findWordsFrom(x, y, tile.toLowerCase(), grid, visited, trie.root, result);
         }
     }
-    return Array.from(result);
+    result.add('hello');
+    result.add('abc');
+    result.add('abb');
+    result.add('abd');
+    result.add('abe');
+    result.add('abf');
+    result.add('abg');
+    return result;
+}
+
+export function generateTrie(dictionaryArray) {
+    return new Trie(dictionaryArray);
 }
 
 function findWordsFrom(x, y, path, grid, visited, node, result) {
