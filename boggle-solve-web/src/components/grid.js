@@ -23,7 +23,7 @@ function Grid(props) {
     console.log(grid);
     console.log(grid[0][0]);
     return (<>
-        <table>
+        <table style={{display: 'inline-block'}}>
             <tbody>
             <tr>
                 <td>
