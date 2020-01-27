@@ -37,20 +37,21 @@ class Trie {
 }
 
 export function findWords(grid, trie) {
+    let gridd = [];
+    for(const [x, array] of grid.entries()) {
+        let hi = [];
+        for(const [y, tile] of Array.from(array).entries()) {
+            hi.push(tile.toLowerCase());
+        }
+        gridd.push(hi);
+    }
     let result = new Set();
     let visited = createBooleanMatrix(grid, false);
-    for(const [x, array] of grid.entries()) {
+    for(const [x, array] of gridd.entries()) {
         for(const [y, tile] of Array.from(array).entries()) {
-            findWordsFrom(x, y, tile.toLowerCase(), grid, visited, trie.root, result);
+            findWordsFrom(x, y, tile.toLowerCase(), gridd, visited, trie.root, result);
         }
     }
-    result.add('hello');
-    result.add('abc');
-    result.add('abb');
-    result.add('abd');
-    result.add('abe');
-    result.add('abf');
-    result.add('abg');
     return result;
 }
 
@@ -60,7 +61,7 @@ export function generateTrie(dictionaryArray) {
 
 function findWordsFrom(x, y, path, grid, visited, node, result) {
     let ptr = node;
-    for(const char of grid[x][y]) {
+    for(let char of grid[x][y]) {
         if(ptr.children.has(char)) {
             ptr = ptr.children.get(char);
         } else {
@@ -68,7 +69,9 @@ function findWordsFrom(x, y, path, grid, visited, node, result) {
         }
     }
     visited[x][y] = true;
-    if(ptr.isValid && path.length > 2) { result.add(path); }
+    if(ptr.isValid && path.length > 2) {
+        result.add(path);
+    }
     let validMoves = getValidMoves(x, y, grid, visited);
     for(const coordinate of validMoves) {
         let x = coordinate[0];

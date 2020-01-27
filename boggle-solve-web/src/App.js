@@ -21,6 +21,7 @@ function App() {
       word: '',
     },
     onSubmit: (values, actions) => {
+      setEnteredWord("");
       setEnteredWord(values.word);
       setWord('');
       formik.values.word = '';
@@ -32,14 +33,28 @@ function App() {
 
   useEffect(() => {
     setWord(formik.values.word);
-  } ,[formik.values])
+  } ,[formik.values]);
 
   function toggleBoard() {
     if(!boardIsVisible){
       const newGrid = generateGrid();
+      setCorrectAnswers(new Set());
       setValidWords(findWords(newGrid, dictionary));
-    };
+    } else {
+
+    }
     setBoardIsVisible(!boardIsVisible);
+  }
+
+  function difference(setA, setB) {
+    if(setA && setB) {
+      let _difference = new Set(setA);
+      for (const elem of setB) {
+        _difference.delete(elem)
+      }
+      return _difference
+    }
+    return [];
   }
 
   // only runs once
@@ -48,7 +63,10 @@ function App() {
   }, []);
 
   useEffect(() => {
-    console.log(validWords, enteredWord, validWords.has(enteredWord));
+    if(enteredWord === "") {
+      setAlreadyEntered(false);
+      return;
+    }
     if(validWords.has(enteredWord)){
       if(!correctAnswers.has(enteredWord)) {
         let newCorrectAnswers = correctAnswers;
@@ -61,9 +79,7 @@ function App() {
     } else {
       setAlreadyEntered(false);
     }
-  }, [enteredWord])
-
-  console.log('correct answers thing: ', correctAnswers);
+  }, [enteredWord]);
 
   function generateGrid() {
     // Returns a random 5x5 board, using the official letter distribution.
@@ -88,8 +104,17 @@ function App() {
     return grid;
   };
 
+  function arrayToFormattedStr(arr) {
+    let theStr = '';
+    arr.forEach(str => {
+      theStr += str + '\n';
+    });
+    return theStr;
+  }
+
   return (<>
     <h1>Boggle Solve Web</h1>
+    <h2>(<a href="https://apps.apple.com/us/app/boggle-solve/id1496483167">Mobile app here!</a>)</h2>
     {boardIsVisible ?
         (<div>
         <h2>Last Word Entered: {enteredWord}</h2>
@@ -123,11 +148,21 @@ function App() {
           </div>
         </form>
 
-        <h2>Correct Answers: {Array.from(correctAnswers)}</h2>
+        <h2>Correct Answers: {
+          arrayToFormattedStr(Array.from(correctAnswers))
+        }</h2>
 
       </div>) :
-        <div></div>
+        <div>
+        </div>
       }
+    {validWords.size > 0 && !boardIsVisible ?
+        <h3>Remaining Answers: {
+          arrayToFormattedStr(Array.from(difference(validWords, correctAnswers)))
+        }</h3>
+        :
+        <div></div>
+    }
   </>);
 
 }

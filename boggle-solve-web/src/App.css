@@ -4,6 +4,8 @@
 
 body {
   text-align: center;
+  background-image: url("shiba.png");
+  background-color: #ffffff;
 }
 
 td {
@@ -11,6 +13,7 @@ td {
   width: 40px;
   height: 40px;
   margin: 0px;
+  background-color: #ffffff;
 }
 
 .App-logo {
