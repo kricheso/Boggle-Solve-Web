@@ -5,8 +5,10 @@ import './App.css';
 import { useFormik } from 'formik';
 import {findWords, generateTrie} from './boggle_solver';
 import jsonDictionary from './full-wordlist';
+import { useTimer } from 'react-timer-hook';
 
 function App() {
+
   const [boardIsVisible, setBoardIsVisible] = useState(false);
   const [word, setWord] = useState('');
   const [enteredWord, setEnteredWord] = useState('');
@@ -15,6 +17,29 @@ function App() {
   const [gameGrid, setGameGrid] = useState(null);
   const [validWords, setValidWords] = useState(new Set());
   const [dictionary, setDictionary] = useState(null);
+  const [timeLeft, setTimeLeft] = useState(null);
+
+  function MyTimer({ expiryTimestamp }) {
+    const {
+      seconds,
+      start,
+      pause,
+      resume,
+      restart,
+    } = useTimer({
+      expiryTimestamp, onExpire: () => {
+        console.warn('onExpire called');
+        toggleBoard(!boardIsVisible);
+      }
+    });
+    return (
+        <div style={{textAlign: 'center'}}>
+          <div style={{fontSize: '50px'}}>
+            Time: <span>{seconds}</span>
+          </div>
+        </div>
+    );
+  }
 
   const formik = useFormik({
     initialValues: {
@@ -37,11 +62,14 @@ function App() {
 
   function toggleBoard() {
     if(!boardIsVisible){
+      const time = new Date();
+      time.setSeconds(time.getSeconds() + 60);
+      setTimeLeft(time);
       const newGrid = generateGrid();
       setCorrectAnswers(new Set());
       setValidWords(findWords(newGrid, dictionary));
     } else {
-
+      setEnteredWord('');
     }
     setBoardIsVisible(!boardIsVisible);
   }
@@ -117,6 +145,7 @@ function App() {
     <h2>(<a href="https://apps.apple.com/us/app/boggle-solve/id1496483167">Mobile app here!</a>)</h2>
     {boardIsVisible ?
         (<div>
+          <MyTimer expiryTimestamp={timeLeft} />
         <h2>Last Word Entered: {enteredWord}</h2>
           {alreadyEntered && <AlreadyUsed word={enteredWord}></AlreadyUsed>}
       </div>) :
@@ -163,6 +192,7 @@ function App() {
         :
         <div></div>
     }
+
   </>);
 
 }
