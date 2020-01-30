@@ -6,6 +6,9 @@ import { useFormik } from 'formik';
 import {findWords, generateTrie} from './boggle_solver';
 import jsonDictionary from './full-wordlist';
 import { useTimer } from 'react-timer-hook';
+import { Row, Col } from 'antd';
+import 'antd/dist/antd.css';
+import { Alert } from 'antd';
 
 function App() {
 
@@ -47,7 +50,7 @@ function App() {
     },
     onSubmit: (values, actions) => {
       setEnteredWord("");
-      setEnteredWord(values.word);
+      setEnteredWord(values.word.toLowerCase());
       setWord('');
       formik.values.word = '';
       actions.setSubmitting(false);
@@ -69,7 +72,10 @@ function App() {
       setCorrectAnswers(new Set());
       setValidWords(findWords(newGrid, dictionary));
     } else {
+      formik.handleSubmit();
+      formik.handleSubmit();
       setEnteredWord('');
+      setWord('');
     }
     setBoardIsVisible(!boardIsVisible);
   }
@@ -140,9 +146,33 @@ function App() {
     return theStr;
   }
 
+  function toNestedArray(bro) {
+    let broo = bro.sort();
+    let result = [];
+    let myArray = [];
+    let count = 0;
+    for(const element of broo) {
+      myArray.push(element);
+      count += 1;
+      if(count === 6) {
+        result.push(myArray);
+        myArray = [];
+        count = 0;
+      }
+    }
+    return result;
+  }
+
   return (<>
-    <h1>Boggle Solve Web</h1>
-    <h2>(<a href="https://apps.apple.com/us/app/boggle-solve/id1496483167">Mobile app here!</a>)</h2>
+    <div><br/></div>
+    <Alert
+        message="Boggle Solve Web"
+        type='warning'
+        style={{width: '400px', display: 'inline-block', color: 'black', backgroundColor: '#FFCD00', border: '1px solid black', fontSize: '40px'}}
+    />
+    <div><br/></div>
+    <h2><u><a style={{color: '#A84F31'}} href="https://apps.apple.com/us/app/boggle-solve/id1496483167">Mobile app here!</a></u></h2>
+    <div><br/></div>
     {boardIsVisible ?
         (<div>
           <MyTimer expiryTimestamp={timeLeft} />
@@ -172,12 +202,11 @@ function App() {
               onChange={formik.handleChange}
               value={formik.values.word}
           />
-          <div>
-            <button type="submit">Submit</button>
-          </div>
+          <button type="submit">Submit</button>
         </form>
+          <div><br/></div>
 
-        <h2>Correct Answers: {
+        <h2 style={{width: '60%', margin: '0 20% 0 20%'}}>Correct Answers: {
           arrayToFormattedStr(Array.from(correctAnswers))
         }</h2>
 
@@ -185,10 +214,22 @@ function App() {
         <div>
         </div>
       }
-    {validWords.size > 0 && !boardIsVisible ?
-        <h3>Remaining Answers: {
-          arrayToFormattedStr(Array.from(difference(validWords, correctAnswers)))
-        }</h3>
+    {validWords.size > 0 && !boardIsVisible ?<>
+          <h2><u><b>Remaining Answers:</b></u></h2>
+          <div><br/></div>
+        <h3>
+          {toNestedArray(Array.from(difference(validWords, correctAnswers))).map(function(element, i) {
+            return(<Row style={{width: '60%', fontSize: '12px', margin: '0 20% 0 20%'}}>
+              <Col span={4}>{element[0]}</Col>
+              <Col span={4}>{element[1]}</Col>
+              <Col span={4}>{element[2]}</Col>
+              <Col span={4}>{element[3]}</Col>
+              <Col span={4}>{element[4]}</Col>
+              <Col span={4}>{element[5]}</Col>
+            </Row>);
+          })}
+        </h3>
+        </>
         :
         <div></div>
     }
