@@ -5,7 +5,8 @@ function Grid(props) {
     const grid = props.grid;
 
     return (<>
-        <table style={{display: 'inline-block'}}>
+        {grid ?
+        (<table style={{display: 'inline-block'}}>
             <tbody>
             <tr>
                 <td>
@@ -93,7 +94,7 @@ function Grid(props) {
                 </td>
             </tr>
             </tbody>
-        </table>
+        </table>) : (<div>Loading Grid!</div>)}
     </>);
 }
 

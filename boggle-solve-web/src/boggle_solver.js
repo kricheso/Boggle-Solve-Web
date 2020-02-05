@@ -38,9 +38,9 @@ class Trie {
 
 export function findWords(grid, trie) {
     let gridd = [];
-    for(const [x, array] of grid.entries()) {
+    for(const array of grid) {
         let hi = [];
-        for(const [y, tile] of Array.from(array).entries()) {
+        for(const tile of Array.from(array)) {
             hi.push(tile.toLowerCase());
         }
         gridd.push(hi);
@@ -108,7 +108,7 @@ function createBooleanMatrix(grid, boolean) {
     let result = [];
     for(const array of grid) {
         let subResult = [];
-        for(const element of grid) {
+        for(let i=0; i<array.length; i++) {
             subResult.push(boolean);
         }
         result.push(subResult)

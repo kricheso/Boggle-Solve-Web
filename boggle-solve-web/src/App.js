@@ -9,6 +9,7 @@ import { useTimer } from 'react-timer-hook';
 import { Row, Col } from 'antd';
 import 'antd/dist/antd.css';
 import { Alert } from 'antd';
+import FullGameBoard from './components/fullGameBoard'
 
 function App() {
 
@@ -18,17 +19,14 @@ function App() {
   const [alreadyEntered, setAlreadyEntered] = useState(true);
   const [correctAnswers, setCorrectAnswers] = useState(new Set());
   const [gameGrid, setGameGrid] = useState(null);
+  const [sampleGrid, setSampleGrid] = useState(null);
   const [validWords, setValidWords] = useState(new Set());
   const [dictionary, setDictionary] = useState(null);
   const [timeLeft, setTimeLeft] = useState(null);
 
   function MyTimer({ expiryTimestamp }) {
     const {
-      seconds,
-      start,
-      pause,
-      resume,
-      restart,
+      seconds
     } = useTimer({
       expiryTimestamp, onExpire: () => {
         console.warn('onExpire called');
@@ -94,6 +92,8 @@ function App() {
   // only runs once
   useEffect(() => {
     setDictionary(generateTrie(jsonDictionary.words));
+    generateSampleGrid();
+    return () => {};
   }, []);
 
   useEffect(() => {
@@ -137,6 +137,18 @@ function App() {
     setGameGrid(grid);
     return grid;
   };
+
+  function generateSampleGrid() {
+    let matrix = [
+      ["T", "E", "I", "D", "O"],
+      ["A", "Z", "A", "E", "S"],
+      ["O", "M", "N", "N", "C"],
+      ["Y", "G", "I", "I", "E"],
+      ["H", "F", "M", "D", "N"]
+    ];
+    setSampleGrid(matrix);
+    return matrix;
+  }
 
   function arrayToFormattedStr(arr) {
     let theStr = '';
@@ -233,6 +245,11 @@ function App() {
         :
         <div></div>
     }
+
+
+    Hi!!
+
+    {sampleGrid ? (<FullGameBoard grid={sampleGrid}/>) : (<div>fd</div>)}
 
   </>);
 
