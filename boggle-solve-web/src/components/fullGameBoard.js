@@ -5,6 +5,7 @@ import { useFormik } from 'formik';
 import { findWords, generateTrie } from '../boggle_solver';
 import jsonDictionary from '../full-wordlist';
 import 'antd/dist/antd.css';
+import {Col, Row} from "antd";
 
 function FullGameBoard(props) {
 
@@ -13,9 +14,9 @@ function FullGameBoard(props) {
     // ==================
 
     const [score, setScore] = useState(0);
-    const [timeLeft, setTimeLeft] = useState(7);
+    const [timeLeft, setTimeLeft] = useState(60);
     const [lastWordInputted, setLastWordInputted] = useState("");
-    const [isDisplayingAlreadyUsedWarning, setIsDisplayingAlreadyUsedWarning] = useState(true);
+    const [isDisplayingAlreadyUsedWarning, setIsDisplayingAlreadyUsedWarning] = useState(false);
     const [correctAnswers, setCorrectAnswers] = useState(new Set());
     const [validWords, setValidWords] = useState(new Set());
     const [dictionary, setDictionary] = useState(null);
@@ -76,6 +77,17 @@ function FullGameBoard(props) {
     // MARK: Functions
     // ===============
 
+    function difference(setA, setB) {
+        if(setA && setB) {
+            let _difference = new Set(setA);
+            for (const elem of setB) {
+                _difference.delete(elem)
+            }
+            return _difference
+        }
+        return [];
+    }
+
     function evaluateScore(word) {
         switch(word.length) {
             case 0: return 0;
@@ -100,33 +112,70 @@ function FullGameBoard(props) {
         return result;
     }
 
+    function toFormattedArray(array) {
+        let sortedArray = array.sort();
+        let result = [];
+        let myArray = [];
+        let count = 0;
+        for(const element of sortedArray) {
+            myArray.push(element);
+            count += 1;
+            if(count === 6) {
+                result.push(myArray);
+                myArray = [];
+                count = 0;
+            }
+        }
+        return result;
+    }
+
     // =========
     // MARK: JSX
     // =========
 
     return (<>
         <div>
-            {timeLeft}
-            {timeLeft !== 0 ? (<div>Showing!</div>) : (<div>Not Showing</div>)}
+            <div>Score: {score}</div>
+            <div>Time: {timeLeft}</div>
             {isDisplayingAlreadyUsedWarning && <AlreadyUsed word={lastWordInputted}></AlreadyUsed>}
         </div>
-        <Grid grid={props.grid}></Grid>
-        <div>
-            <form onSubmit={formik.handleSubmit} id='wordInput'>
-                <label htmlFor="word"></label>
-                <input
-                    autoComplete="off"
-                    id="word"
-                    name="word"
-                    type="word"
-                    onChange={formik.handleChange}
-                    value={formik.values.word}
-                />
-                <button type="submit">Submit</button>
-            </form>
-            <div><br/></div>
-            <h2 style={{width: '60%', margin: '0 20% 0 20%'}}>Correct Answers: { stringify(correctAnswers) }</h2>
-        </div>
+
+        {timeLeft !== 0 ? (
+            <div>
+                <Grid grid={props.grid}></Grid>
+                <form onSubmit={formik.handleSubmit} id='wordInput'>
+                    <label htmlFor="word"></label>
+                    <input
+                        autoComplete="off"
+                        id="word"
+                        name="word"
+                        type="word"
+                        onChange={formik.handleChange}
+                        value={formik.values.word}
+                    />
+                    <button type="submit">Submit</button>
+                </form>
+                <div><br/></div>
+                <h2 style={{width: '60%', margin: '0 20% 0 20%'}}>Correct Answers: { stringify(correctAnswers) }</h2>
+            </div>
+        ) : (
+            <div>
+                <h2><u><b>Remaining Answers:</b></u></h2>
+                <div><br/></div>
+                <h3>
+                    {toFormattedArray(Array.from(difference(validWords, correctAnswers))).map(function(element, i) {
+                        return(<Row style={{width: '60%', fontSize: '12px', margin: '0 20% 0 20%'}}>
+                            <Col span={4}>{element[0]}</Col>
+                            <Col span={4}>{element[1]}</Col>
+                            <Col span={4}>{element[2]}</Col>
+                            <Col span={4}>{element[3]}</Col>
+                            <Col span={4}>{element[4]}</Col>
+                            <Col span={4}>{element[5]}</Col>
+                        </Row>);
+                    })}
+                </h3>
+            </div>
+        )}
     </>);
 
 }
