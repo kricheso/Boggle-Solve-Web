@@ -5,7 +5,6 @@ import './App.css';
 import { useFormik } from 'formik';
 import {findWords, generateTrie} from './boggle_solver';
 import jsonDictionary from './full-wordlist';
-import { useTimer } from 'react-timer-hook';
 import { Row, Col } from 'antd';
 import 'antd/dist/antd.css';
 import { Alert } from 'antd';
@@ -22,25 +21,6 @@ function App() {
   const [sampleGrid, setSampleGrid] = useState(null);
   const [validWords, setValidWords] = useState(new Set());
   const [dictionary, setDictionary] = useState(null);
-  const [timeLeft, setTimeLeft] = useState(null);
-
-  function MyTimer({ expiryTimestamp }) {
-    const {
-      seconds
-    } = useTimer({
-      expiryTimestamp, onExpire: () => {
-        console.warn('onExpire called');
-        toggleBoard(!boardIsVisible);
-      }
-    });
-    return (
-        <div style={{textAlign: 'center'}}>
-          <div style={{fontSize: '50px'}}>
-            Time: <span>{seconds}</span>
-          </div>
-        </div>
-    );
-  }
 
   const formik = useFormik({
     initialValues: {
@@ -63,9 +43,6 @@ function App() {
 
   function toggleBoard() {
     if(!boardIsVisible){
-      const time = new Date();
-      time.setSeconds(time.getSeconds() + 60);
-      setTimeLeft(time);
       const newGrid = generateGrid();
       setCorrectAnswers(new Set());
       setValidWords(findWords(newGrid, dictionary));
@@ -187,7 +164,6 @@ function App() {
     <div><br/></div>
     {boardIsVisible ?
         (<div>
-          <MyTimer expiryTimestamp={timeLeft} />
         <h2>Last Word Entered: {enteredWord}</h2>
           {alreadyEntered && <AlreadyUsed word={enteredWord}></AlreadyUsed>}
       </div>) :

@@ -4,7 +4,6 @@ import AlreadyUsed from './alreadyUsed';
 import { useFormik } from 'formik';
 import { findWords, generateTrie } from '../boggle_solver';
 import jsonDictionary from '../full-wordlist';
-import { useTimer } from 'react-timer-hook';
 import 'antd/dist/antd.css';
 
 function FullGameBoard(props) {
@@ -13,31 +12,29 @@ function FullGameBoard(props) {
     // MARK: - Use States
     // ==================
 
-    const [word, setWord] = useState('');
-    const [enteredWord, setEnteredWord] = useState('');
-    const [alreadyEntered, setAlreadyEntered] = useState(true);
+    const [score, setScore] = useState(0);
+    const [timeLeft, setTimeLeft] = useState(7);
+    const [lastWordInputted, setLastWordInputted] = useState("");
+    const [isDisplayingAlreadyUsedWarning, setIsDisplayingAlreadyUsedWarning] = useState(true);
     const [correctAnswers, setCorrectAnswers] = useState(new Set());
     const [validWords, setValidWords] = useState(new Set());
     const [dictionary, setDictionary] = useState(null);
-    const [timeLeft, setTimeLeft] = useState(null);
 
     // =================
     // MARK: - Constants
     // =================
 
     const formik = useFormik({
-        initialValues: {
-            word: '',
-        },
+        enableReinitialize: true,
+        initialValues: { word: "" },
         onSubmit: (values, actions) => {
-            setEnteredWord("");
-            setEnteredWord(values.word.toLowerCase());
-            setWord('');
-            formik.values.word = '';
+            // Setting twice to make sure the use effect is triggered.
+            setLastWordInputted("");
+            setLastWordInputted(values.word.toLowerCase());
+            formik.values.word = "";
             actions.setSubmitting(false);
             actions.resetForm();
-        },
-        enableReinitialize: true,
+        }
     });
 
     // ===================
@@ -46,64 +43,61 @@ function FullGameBoard(props) {
 
     useEffect(() => {
         setDictionary(generateTrie(jsonDictionary.words));
-        const time = new Date();
-        time.setSeconds(time.getSeconds() + 10);
-        setTimeLeft(time);
     }, []);
 
     useEffect(() => {
-        if (props.grid === null || dictionary === null) { return }
+        if (timeLeft === 0) { return; }
+        const intervalId = setInterval(() => {
+            setTimeLeft(timeLeft - 1);
+        }, 1000);
+        return () => {
+            clearInterval(intervalId);
+        }
+    }, [timeLeft]);
+
+    useEffect(() => {
+        if (props.grid === null || dictionary === null) { return; }
         setValidWords(findWords(props.grid, dictionary));
     }, [props.grid, dictionary]);
 
     useEffect(() => {
-        setWord(formik.values.word);
-    } ,[formik.values]);
-
-    useEffect(() => {
-        if(enteredWord === "") {
-            setAlreadyEntered(false);
-            return;
-        }
-        if(validWords.has(enteredWord)){
-            if(!correctAnswers.has(enteredWord)) {
-                let newCorrectAnswers = correctAnswers;
-                newCorrectAnswers.add(enteredWord);
-                setCorrectAnswers(newCorrectAnswers);
-                setAlreadyEntered(false);
-            } else {
-                setAlreadyEntered(true);
+        if (validWords.has(lastWordInputted)) {
+            if (correctAnswers.has(lastWordInputted)) {
+                setIsDisplayingAlreadyUsedWarning(true);
+                return;
             }
-        } else {
-            setAlreadyEntered(false);
+            setCorrectAnswers(correctAnswers.add(lastWordInputted));
+            setScore(score + evaluateScore(lastWordInputted))
         }
-    }, [enteredWord, correctAnswers, validWords]);
+        setIsDisplayingAlreadyUsedWarning(false);
+    }, [lastWordInputted, correctAnswers, validWords]);
 
     // ===============
     // MARK: Functions
     // ===============
 
-    function MyTimer({ expiryTimestamp }) {
-        const { seconds } = useTimer({
-            expiryTimestamp, onExpire: () => {
-                console.warn('onExpire called');
-            }
-        });
-        return (
-            <div style={{textAlign: 'center'}}>
-                <div style={{fontSize: '50px'}}>
-                    Time: <span>{seconds}</span>
-                </div>
-            </div>
-        );
+    function evaluateScore(word) {
+        switch(word.length) {
+            case 0: return 0;
+            case 1: return 0;
+            case 2: return 0;
+            case 3: return 100;
+            case 4: return 300;
+            case 5: return 600;
+            case 6: return 1000;
+            case 7: return 1500;
+            case 8: return 2100;
+            case 9: return 2800;
+            default: return 5000;
+        }
     }
 
-    function arrayToFormattedStr(arr) {
-        let theStr = '';
-        arr.forEach(str => {
-            theStr += str + '\n';
+    function stringify(collection) {
+        let result = '';
+        collection.forEach(str => {
+            result += str + '\n';
         });
-        return theStr;
+        return result;
     }
 
     // =========
@@ -111,25 +105,17 @@ function FullGameBoard(props) {
     // =========
 
     return (<>
-        {timeLeft !== 0 ?
-            (
-                <div>Timer!</div>
-            ) : (
-                <div>Ended!</div>
-            )
-        }
         <div>
-            <MyTimer expiryTimestamp={timeLeft} />
-            <h2>Last Word Entered: {enteredWord}</h2>
-            {alreadyEntered && <AlreadyUsed word={enteredWord}></AlreadyUsed>}
+            {timeLeft}
+            {timeLeft !== 0 ? (<div>Showing!</div>) : (<div>Not Showing</div>)}
+            {isDisplayingAlreadyUsedWarning && <AlreadyUsed word={lastWordInputted}></AlreadyUsed>}
         </div>
-        <div><br/></div>
         <Grid grid={props.grid}></Grid>
         <div>
-            <h2>Current Word: {word}</h2>
             <form onSubmit={formik.handleSubmit} id='wordInput'>
                 <label htmlFor="word"></label>
                 <input
+                    autoComplete="off"
                     id="word"
                     name="word"
                     type="word"
@@ -139,9 +125,7 @@ function FullGameBoard(props) {
                 <button type="submit">Submit</button>
             </form>
             <div><br/></div>
-            <h2 style={{width: '60%', margin: '0 20% 0 20%'}}>Correct Answers: {
-                arrayToFormattedStr(Array.from(correctAnswers))
-            }</h2>
+            <h2 style={{width: '60%', margin: '0 20% 0 20%'}}>Correct Answers: { stringify(correctAnswers) }</h2>
         </div>
     </>);
 
