@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import 'antd/dist/antd.css';
 import { Alert } from 'antd';
-import LoginButton from './components/LoginButton.js';
+import LoginButton from './components/loginButton.js';
 import FullGameBoard from './components/fullGameBoard';
 import TextInput from './components/textInput';
 import UserResponses from './components/userResponses';
+import ChallengesResponse from './components/challengesResponse';
 
 function App() {
 
@@ -34,6 +35,10 @@ function App() {
     generateGrid();
   }
 
+  function loadChallenges() {
+    console.log("Loading Challenges!")
+  }
+
   function generateGrid() {
     const dice = ["AAAFRS", "AAEEEE", "AAFIRS", "ADENNN", "AEEEEM",
       "AEEGMU", "AEGMNN", "AFIRSY", "BJKQXZ", "CCNSTW",
@@ -55,6 +60,10 @@ function App() {
     return grid;
   }
 
+    // =========
+    // MARK: JSX
+    // =========
+
   return (<>
     <br/>
     <Alert
@@ -63,17 +72,22 @@ function App() {
         style={{width: '400px', display: 'inline-block', color: 'black', backgroundColor: '#FFCD00', border: '1px solid black', fontSize: '40px'}}
     />
     <h2><u><a style={{color: '#A84F31'}} href="https://apps.apple.com/us/app/boggle-solve/id1496483167">Mobile app here!</a></u></h2>
+    {user && 
+      <>
+      <p>Welcome, {user.displayName} ({user.email})<TextInput promptText="Change Nick Name??" field="name" user={user} /></p>
+      </>
+    }
     <br/><br/>
     <button onClick={ toggleLocalPlayerGame }> { isCurrentlyPlayingGame ? ('End Game') : ('New Local Game') } </button>
     <br/><br/>
-    <LoginButton setUser={(user) => setUser(user)} />
-    {user && 
+    {user === null ? (
+      <LoginButton setUser={(user) => setUser(user)} />
+    ) : (
       <>
-      <p>Welcome, {user.displayName} ({user.email})</p>  
+      <button onClick={ loadChallenges }>Load/Refresh Challenges</button>
+      { /* <ChallengesResponse></ChallengesResponse>*/ }
       </>
-    }
-    <TextInput promptText="Name?" field="name" user={user} /> 
-    <TextInput promptText="Hometown?" field="hometown" user={user} />
+    )}
     <UserResponses collectionName="Bro this is a collection name"/>
     {isCurrentlyPlayingGame && grid ? (<FullGameBoard grid={grid}/>) : (<div></div>)}
   </>);

@@ -23,7 +23,7 @@ function UserResponses({collectionName}) {
   return (
     <div><ul>
     {dataList.map((data) => {
-        return (<li key={data.id}>{data.id}, {data.name}, {data.hometown}</li>) 
+        return (<li>{data.id}, {data.name}, {data.hometown}</li>) 
     })
     }
     </ul></div>);
