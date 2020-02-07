@@ -3,7 +3,8 @@ import './App.css';
 import 'antd/dist/antd.css';
 import { Alert } from 'antd';
 import LoginButton from './components/LoginButton.js';
-import FullGameBoard from './components/fullGameBoard'
+import FullGameBoard from './components/fullGameBoard';
+import TextInput from './components/textInput';
 
 function App() {
 
@@ -65,7 +66,13 @@ function App() {
     <button onClick={ toggleLocalPlayerGame }> { isCurrentlyPlayingGame ? ('End Game') : ('New Local Game') } </button>
     <br/><br/>
     <LoginButton setUser={(user) => setUser(user)} />
-    {user && <p>Welcome, {user.displayName} ({user.email})</p>}
+    {user && 
+      <>
+      <p>Welcome, {user.displayName} ({user.email})</p>  
+      </>
+    }
+        <TextInput promptText="Name?" field="name" user={user} /> 
+      <TextInput promptText="Hometown?" field="hometown" user={user} />
     {isCurrentlyPlayingGame && grid ? (<FullGameBoard grid={grid}/>) : (<div></div>)}
   </>);
 
