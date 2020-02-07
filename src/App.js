@@ -5,6 +5,7 @@ import { Alert } from 'antd';
 import LoginButton from './components/LoginButton.js';
 import FullGameBoard from './components/fullGameBoard';
 import TextInput from './components/textInput';
+import UserResponses from './components/userResponses';
 
 function App() {
 
@@ -71,8 +72,9 @@ function App() {
       <p>Welcome, {user.displayName} ({user.email})</p>  
       </>
     }
-        <TextInput promptText="Name?" field="name" user={user} /> 
-      <TextInput promptText="Hometown?" field="hometown" user={user} />
+    <TextInput promptText="Name?" field="name" user={user} /> 
+    <TextInput promptText="Hometown?" field="hometown" user={user} />
+    <UserResponses collectionName="Bro this is a collection name"/>
     {isCurrentlyPlayingGame && grid ? (<FullGameBoard grid={grid}/>) : (<div></div>)}
   </>);
 
