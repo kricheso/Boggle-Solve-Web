@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import 'antd/dist/antd.css';
 import { Alert } from 'antd';
+import LoginButton from './components/LoginButton.js';
 import FullGameBoard from './components/fullGameBoard'
 
 function App() {
@@ -10,6 +11,7 @@ function App() {
   // MARK: - Use States
   // ==================
 
+  const [user, setUser] = useState(null);
   const [isCurrentlyPlayingGame, setIsCurrentlyPlayingGame] = useState(false);
   const [grid, setGrid] = useState(null);
 
@@ -62,7 +64,8 @@ function App() {
     <br/><br/>
     <button onClick={ toggleLocalPlayerGame }> { isCurrentlyPlayingGame ? ('End Game') : ('New Local Game') } </button>
     <br/><br/>
-    <button onClick={ toggleLocalPlayerGame }> Login or Register! </button>
+    <LoginButton setUser={(user) => setUser(user)} />
+    {user && <p>Welcome, {user.displayName} ({user.email})</p>}
     {isCurrentlyPlayingGame && grid ? (<FullGameBoard grid={grid}/>) : (<div></div>)}
   </>);
 
