@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'; 
 import firebase from 'firebase';
 
-function ChallengesResponse() {
+const ChallengesResponse = params => {
 
     // ==================
     // MARK: - Use States
@@ -14,6 +14,7 @@ function ChallengesResponse() {
     // ===================
 
     useEffect(() => {
+        console.log("A called");
         const unsubscribe = firebase.firestore().collection("challenges").onSnapshot((querySnapshot) => {
             var firestoreData = []; 
             querySnapshot.forEach(function(doc) {
@@ -27,18 +28,12 @@ function ChallengesResponse() {
         return () => unsubscribe() 
     }, [])
 
+    useEffect(() => {
+        console.log("B called");
+        params.setChallegeData(dataList);
+    }, [dataList])
 
-    // =========
-    // MARK: JSX
-    // =========
-
-    return (
-    <div><ul>
-    {dataList.map((data) => {
-        return (<li key={data.id}>{data.id}, {data.hiscore}</li>) 
-    })
-    }
-    </ul></div>);
+    return <></>
 
  };
 

@@ -5,9 +5,7 @@ import { Alert } from 'antd';
 import LoginButton from './components/loginButton.js';
 import FullGameBoard from './components/fullGameBoard';
 import TextInput from './components/textInput';
-import UserResponses from './components/userResponses';
 import ChallengesResponse from './components/challengesResponse';
-// import DataService from './dataService';
 
 function App() {
 
@@ -18,6 +16,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [isCurrentlyPlayingGame, setIsCurrentlyPlayingGame] = useState(false);
   const [grid, setGrid] = useState(null);
+  const [challegeData, setChallegeData] = useState([]);
 
   // ===================
   // MARK: - Use Effects
@@ -38,6 +37,7 @@ function App() {
 
   function loadChallenges() {
     console.log("Loading Challenges!")
+    console.log(challegeData);
   }
 
   function generateGrid() {
@@ -86,10 +86,12 @@ function App() {
     ) : (
       <>
       <button onClick={ loadChallenges }>Load Challenges</button>
-      <ChallengesResponse></ChallengesResponse>
+      <ChallengesResponse setChallegeData={setChallegeData}></ChallengesResponse>
+      {challegeData.length > 0 &&
+        <>{challegeData[0].id}</>
+      }
       </>
     )}
-    <UserResponses collectionName="Bro this is a collection name"/>
     {isCurrentlyPlayingGame && grid ? (<FullGameBoard grid={grid}/>) : (<div></div>)}
   </>);
 
