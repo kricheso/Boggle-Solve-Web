@@ -13,7 +13,7 @@ function LoginButton({setUser}) {
         });
     }
 
-    return (<button onClick={() => logIn()}>Login</button>);
+    return (<button onClick={() => logIn()}>Login to access challenges and multiplayer!</button>);
 }
 
 export default LoginButton;

@@ -20,7 +20,9 @@ const ChallengesResponse = params => {
             querySnapshot.forEach(function(doc) {
                 firestoreData.push({
                     id: doc.id,
-                    hiscore: doc.data().hiscore,  
+                    grid: doc.data().grid,
+                    hiscore: doc.data().hiscore,
+                    name: doc.data().name
                 }); 
             });
           setDataList(firestoreData);

@@ -17,6 +17,7 @@ function App() {
   const [isCurrentlyPlayingGame, setIsCurrentlyPlayingGame] = useState(false);
   const [grid, setGrid] = useState(null);
   const [challegeData, setChallegeData] = useState([]);
+  const [didPressLoadChallenges, setDidPressLoadChallenges] = useState(false);
 
   // ===================
   // MARK: - Use Effects
@@ -32,12 +33,11 @@ function App() {
 
   function toggleLocalPlayerGame() {
     setIsCurrentlyPlayingGame(!isCurrentlyPlayingGame);
-    generateGrid();
+    setGrid(generateGrid());
   }
 
   function loadChallenges() {
-    console.log("Loading Challenges!")
-    console.log(challegeData);
+    setDidPressLoadChallenges(true);
   }
 
   function generateGrid() {
@@ -57,7 +57,6 @@ function App() {
         if (grid[row][col] === "Q") grid[row][col] = "Qu";
       }
     }
-    setGrid(grid);
     return grid;
   }
 
@@ -81,17 +80,24 @@ function App() {
     <br/><br/>
     <button onClick={ toggleLocalPlayerGame }> { isCurrentlyPlayingGame ? ('End Game') : ('New Local Game') } </button>
     <br/><br/>
-    {user === null ? (
+    {user === null &&
       <LoginButton setUser={(user) => setUser(user)} />
-    ) : (
+    }
+    {user !== null && !didPressLoadChallenges &&
       <>
       <button onClick={ loadChallenges }>Load Challenges</button>
-      <ChallengesResponse setChallegeData={setChallegeData}></ChallengesResponse>
-      {challegeData.length > 0 &&
-        <>{challegeData[0].id}</>
-      }
+      <ChallengesResponse setChallegeData={setChallegeData}/>
       </>
-    )}
+    }
+    {user !== null && challegeData.length > 0 && didPressLoadChallenges &&
+      challegeData.map((data) => {
+        return (<div key={data.name}>
+          <button onClick={loadChallenges}>
+            {data.name} (hiscore: {data.hiscore})
+          </button><br/><br/>
+        </div>) 
+      })
+    }
     {isCurrentlyPlayingGame && grid ? (<FullGameBoard grid={grid}/>) : (<div></div>)}
   </>);
 
