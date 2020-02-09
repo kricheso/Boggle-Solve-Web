@@ -16,16 +16,11 @@ function ChallengesResponse() {
     useEffect(() => {
         const unsubscribe = firebase.firestore().collection("challenges").onSnapshot((querySnapshot) => {
             var firestoreData = []; 
-            querySnapshot.forEach(function(challengeDoc) {
-                challengeDoc.collection("scores").onSnapshot((querySnapshott) => { 
-                    querySnapshott.forEach(function(doc) {
-                        firestoreData.push({
-                            userId: doc.id,
-                            points: doc.data().points, 
-                        }); 
-                    });
-                });
-                
+            querySnapshot.forEach(function(doc) {
+                firestoreData.push({
+                    id: doc.id,
+                    hiscore: doc.data().hiscore,  
+                }); 
             });
           setDataList(firestoreData);
         });
@@ -40,7 +35,7 @@ function ChallengesResponse() {
     return (
     <div><ul>
     {dataList.map((data) => {
-        return (<li key={data.id}>{data.id}, {data.points}</li>) 
+        return (<li key={data.id}>{data.id}, {data.hiscore}</li>) 
     })
     }
     </ul></div>);

@@ -7,6 +7,7 @@ import FullGameBoard from './components/fullGameBoard';
 import TextInput from './components/textInput';
 import UserResponses from './components/userResponses';
 import ChallengesResponse from './components/challengesResponse';
+// import DataService from './dataService';
 
 function App() {
 
@@ -84,8 +85,8 @@ function App() {
       <LoginButton setUser={(user) => setUser(user)} />
     ) : (
       <>
-      <button onClick={ loadChallenges }>Load/Refresh Challenges</button>
-      { /* <ChallengesResponse></ChallengesResponse>*/ }
+      <button onClick={ loadChallenges }>Load Challenges</button>
+      <ChallengesResponse></ChallengesResponse>
       </>
     )}
     <UserResponses collectionName="Bro this is a collection name"/>
