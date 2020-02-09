@@ -20,7 +20,7 @@ function TextInput({promptText, user, field}) {
         }
     }    
 
-    return ( <><button onClick={() => getUserInput()}>{promptText}</button>{text}</>); 
+    return ( <>{text}<button onClick={() => getUserInput()}>{promptText}</button></>); 
 }
 
 export default TextInput;

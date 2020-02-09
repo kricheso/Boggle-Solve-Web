@@ -16,7 +16,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [isCurrentlyPlayingGame, setIsCurrentlyPlayingGame] = useState(false);
   const [grid, setGrid] = useState(null);
-  const [challegeData, setChallegeData] = useState([]);
+  const [challengeData, setChallegeData] = useState([]);
   const [didPressLoadChallenges, setDidPressLoadChallenges] = useState(false);
 
   // ===================
@@ -34,6 +34,12 @@ function App() {
   function toggleLocalPlayerGame() {
     setIsCurrentlyPlayingGame(!isCurrentlyPlayingGame);
     setGrid(generateGrid());
+  }
+
+  function toggleChallengeGame(e) {
+    console.log(e);
+    setIsCurrentlyPlayingGame(!isCurrentlyPlayingGame);
+    setGrid(stringToGrid(e.grid));
   }
 
   function loadChallenges() {
@@ -54,6 +60,21 @@ function App() {
       grid[row] = [];
       for (let col = 0; col < SIZE; ++col) {
         grid[row][col] = chars[SIZE * row + col];
+        if (grid[row][col] === "Q") grid[row][col] = "Qu";
+      }
+    }
+    return grid;
+  }
+
+  function stringToGrid(s) {
+    if (s.length !== 25) { return }
+    let chars = s.split('');
+    const SIZE = 5;
+    let grid = [];
+    for (let row = 0; row < SIZE; row++) {
+      grid[row] = [];
+      for (let col = 0; col < SIZE; ++col) {
+        grid[row][col] = chars[SIZE * row + col]
         if (grid[row][col] === "Q") grid[row][col] = "Qu";
       }
     }
@@ -89,10 +110,10 @@ function App() {
       <ChallengesResponse setChallegeData={setChallegeData}/>
       </>
     }
-    {user !== null && challegeData.length > 0 && didPressLoadChallenges &&
-      challegeData.map((data) => {
+    {user !== null && challengeData.length > 0 && didPressLoadChallenges &&
+      challengeData.map((data) => {
         return (<div key={data.name}>
-          <button onClick={loadChallenges}>
+          <button onClick={() => toggleChallengeGame(data)}>
             {data.name} (hiscore: {data.hiscore})
           </button><br/><br/>
         </div>) 
