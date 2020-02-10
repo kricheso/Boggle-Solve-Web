@@ -15,13 +15,14 @@ function FullGameBoard(props) {
     // ==================
 
     const [score, setScore] = useState(0);
-    const [timeLeft, setTimeLeft] = useState(60);
+    const [timeLeft, setTimeLeft] = useState(20);
     const [lastWordInputted, setLastWordInputted] = useState("");
     const [isDisplayingAlreadyUsedWarning, setIsDisplayingAlreadyUsedWarning] = useState(false);
     const [correctAnswers, setCorrectAnswers] = useState(new Set());
     const [validWords, setValidWords] = useState(new Set());
     const [dictionary, setDictionary] = useState(null);
-    const [usersHiscore, setUsersHiscore] = useState(0);
+    const [usersHiscore, setUsersHiscore] = useState(null);
+    const [worldRecord, setWorldRecord] = useState(null);
 
     // =================
     // MARK: - Constants
@@ -47,6 +48,9 @@ function FullGameBoard(props) {
     useEffect(() => {
         setDictionary(generateTrie(jsonDictionary.words));
         if(props.singluarChallengeData) {
+            firebase.firestore().collection("challenges").doc(props.singluarChallengeData.id).get().then(document=> {
+                setWorldRecord(document.data().hiscore);
+            });
             firebase.firestore().collection("challenges").doc(props.singluarChallengeData.id).collection("scores").doc(props.user.uid).get().then(document=> {
                 if(document.data() !== undefined) {
                     setUsersHiscore(document.data().score);
@@ -94,6 +98,8 @@ function FullGameBoard(props) {
     function updateUsersScoreOnFirebaseIfNecessary(score) {
         if(props.singluarChallengeData == null) { return; }
         if(props.user === null) { return; }
+        if(usersHiscore === null) { return; }
+        if(worldRecord === null) { return; }
         if(score > usersHiscore) {
             firebase.firestore().collection("challenges").doc(props.singluarChallengeData.id).collection("scores").doc(props.user.uid).set({
                 "score": score
@@ -103,6 +109,16 @@ function FullGameBoard(props) {
             }).catch((error) => {
                 console.error("Error adding document: ", error); 
             });
+            if (score > worldRecord) {
+                firebase.firestore().collection("challenges").doc(props.singluarChallengeData.id).set({
+                    "hiscore": score
+                }, { merge: true }).then(() => {
+                    console.log("Hiscore written!"); 
+                    setUsersHiscore(score);
+                }).catch((error) => {
+                    console.error("Error adding document: ", error); 
+                });
+            }
         }
     }
 

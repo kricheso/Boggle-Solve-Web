@@ -4,8 +4,8 @@ import 'antd/dist/antd.css';
 import { Alert } from 'antd';
 import LoginButton from './components/loginButton.js';
 import FullGameBoard from './components/fullGameBoard';
-import TextInput from './components/textInput';
 import ChallengesResponse from './components/challengesResponse';
+import firebase from 'firebase';
 
 function App() {
 
@@ -33,13 +33,15 @@ function App() {
   // ===============
 
   function toggleLocalPlayerGame() {
+    if(isCurrentlyPlayingGame) {
+      setDidPressLoadChallenges(false);
+    }
     setIsCurrentlyPlayingGame(!isCurrentlyPlayingGame);
     setSingluarChallengeData(null);
     setGrid(generateGrid());
   }
 
   function toggleChallengeGame(e) {
-    console.log(e);
     setIsCurrentlyPlayingGame(!isCurrentlyPlayingGame);
     setSingluarChallengeData(e);
     setGrid(stringToGrid(e.grid));
@@ -47,6 +49,15 @@ function App() {
 
   function loadChallenges() {
     setDidPressLoadChallenges(true);
+  }
+
+  function logout() {
+    firebase.auth().signOut().then(function() {
+      console.log("Logged out.");
+      setUser(null);
+    }).catch(function(error) {
+      console.log(error);
+    });
   }
 
   function generateGrid() {
@@ -96,24 +107,25 @@ function App() {
         style={{width: '400px', display: 'inline-block', color: 'black', backgroundColor: '#FFCD00', border: '1px solid black', fontSize: '40px'}}
     />
     <h2><u><a style={{color: '#A84F31'}} href="https://apps.apple.com/us/app/boggle-solve/id1496483167">Mobile app here!</a></u></h2>
-    {user && 
-      <>
-      <p>Welcome, {user.displayName} ({user.email})<TextInput promptText="Change Nick Name??" field="name" user={user} /></p>
-      </>
+    {user && isCurrentlyPlayingGame &&
+      <div>Welcome, {user.displayName} ({user.email})</div>
+    }
+    {user && !isCurrentlyPlayingGame &&
+      <div>Welcome, {user.displayName} ({user.email})<button onClick={ logout }>Logout</button></div>
     }
     <br/><br/>
-    <button onClick={ toggleLocalPlayerGame }> { isCurrentlyPlayingGame ? ('End Game') : ('New Local Game') } </button>
+    <button onClick={ toggleLocalPlayerGame }> { isCurrentlyPlayingGame ? ('Main Menu') : ('New Local Game') } </button>
     <br/><br/>
-    {user === null &&
+    {user === null && !isCurrentlyPlayingGame &&
       <LoginButton setUser={(user) => setUser(user)} />
     }
-    {user !== null && !didPressLoadChallenges &&
+    {user !== null && !didPressLoadChallenges && !isCurrentlyPlayingGame &&
       <>
       <button onClick={ loadChallenges }>Load Challenges</button>
       <ChallengesResponse setChallengeData={setChallengeData}/>
       </>
     }
-    {user !== null && challengeData.length > 0 && didPressLoadChallenges &&
+    {user !== null && challengeData.length > 0 && didPressLoadChallenges && !isCurrentlyPlayingGame &&
       challengeData.map((data) => {
         return (<div key={data.name}>
           <button onClick={() => toggleChallengeGame(data)}>
