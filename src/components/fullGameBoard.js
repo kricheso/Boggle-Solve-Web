@@ -6,6 +6,7 @@ import { findWords, generateTrie } from '../boggle_solver';
 import jsonDictionary from '../full-wordlist';
 import 'antd/dist/antd.css';
 import {Col, Row} from "antd";
+import firebase from 'firebase';
 
 function FullGameBoard(props) {
 
@@ -20,6 +21,7 @@ function FullGameBoard(props) {
     const [correctAnswers, setCorrectAnswers] = useState(new Set());
     const [validWords, setValidWords] = useState(new Set());
     const [dictionary, setDictionary] = useState(null);
+    const [usersHiscore, setUsersHiscore] = useState(0);
 
     // =================
     // MARK: - Constants
@@ -44,6 +46,16 @@ function FullGameBoard(props) {
 
     useEffect(() => {
         setDictionary(generateTrie(jsonDictionary.words));
+        if(props.singluarChallengeData) {
+            firebase.firestore().collection("challenges").doc(props.singluarChallengeData.id).collection("scores").doc(props.user.uid).get().then(document=> {
+                if(document.data() !== undefined) {
+                    setUsersHiscore(document.data().score);
+                } else {
+                    firebase.firestore().collection("challenges").doc(props.singluarChallengeData.id).collection("scores").doc(props.user.uid).set({"score": 0});
+                    setUsersHiscore(0);
+                }
+            });
+        }
     }, []);
 
     useEffect(() => {
@@ -68,7 +80,9 @@ function FullGameBoard(props) {
                 return;
             }
             setCorrectAnswers(correctAnswers.add(lastWordInputted));
-            setScore(score + evaluateScore(lastWordInputted))
+            let newScore = score + evaluateScore(lastWordInputted);
+            setScore(newScore);
+            updateUsersScoreOnFirebaseIfNecessary(newScore);
         }
         setIsDisplayingAlreadyUsedWarning(false);
     }, [lastWordInputted, correctAnswers, validWords]);
@@ -76,6 +90,21 @@ function FullGameBoard(props) {
     // ===============
     // MARK: Functions
     // ===============
+
+    function updateUsersScoreOnFirebaseIfNecessary(score) {
+        if(props.singluarChallengeData == null) { return; }
+        if(props.user === null) { return; }
+        if(score > usersHiscore) {
+            firebase.firestore().collection("challenges").doc(props.singluarChallengeData.id).collection("scores").doc(props.user.uid).set({
+                "score": score
+            }, { merge: true }).then(() => {
+                console.log("Score written!"); 
+                setUsersHiscore(score);
+            }).catch((error) => {
+                console.error("Error adding document: ", error); 
+            });
+        }
+    }
 
     function difference(setA, setB) {
         if(setA && setB) {
@@ -135,6 +164,7 @@ function FullGameBoard(props) {
 
     return (<>
         <div>
+            {props.singluarChallengeData !== null && <div>Your Hiscore for this challenge: {usersHiscore}</div>}
             <div>Score: {score}</div>
             <div>Time: {timeLeft}</div>
             {isDisplayingAlreadyUsedWarning && <AlreadyUsed word={lastWordInputted}></AlreadyUsed>}

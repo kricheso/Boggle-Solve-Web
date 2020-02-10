@@ -32,7 +32,7 @@ const ChallengesResponse = params => {
 
     useEffect(() => {
         console.log("B called");
-        params.setChallegeData(dataList);
+        params.setChallengeData(dataList);
     }, [dataList])
 
     return <></>
