@@ -20,6 +20,11 @@ function App() {
   const [singluarChallengeData, setSingluarChallengeData] = useState(null);
   const [didPressLoadChallenges, setDidPressLoadChallenges] = useState(false);
 
+  const [randomOnlineGrid, setRandomOnlineGrid] = useState(null);
+  const [onlineCode, setOnlineCode] = useState(null);
+  const [onlineP1, setOnlineP1] = useState(null);
+  const [onlineP2, setOnlineP2] = useState(null);
+
   // ===================
   // MARK: - Use Effects
   // ===================
@@ -27,6 +32,10 @@ function App() {
   useEffect(() => {
     console.log("First Render");
   }, []);
+
+  useEffect(() => {
+    setOnlineCode(null);
+  }, [isCurrentlyPlayingGame, user]);
 
   // ===============
   // MARK: Functions
@@ -60,6 +69,45 @@ function App() {
     });
   }
 
+  function createRoom() {
+    if (user == null) { return; }
+    console.log("Hi");
+    let randomGrid = generateGrid();
+    let randomString = Math.random().toString(36).substring(7);
+    setRandomOnlineGrid(randomGrid);
+    setOnlineCode(randomString);
+    firebase.firestore().collection("multiplayer").doc(randomString).set({
+      "grid": gridToString(randomGrid),
+      "user1Id": user.uid,
+      "user1Score": 0,
+      "user2Id": "",
+      "user2Score": 0
+    }).catch((error) => {
+      console.log(error)
+      return;
+    });
+    setOnlineP1(user.uid);
+  }
+
+  function joinRoom() {
+    if (user == null) { return; }
+    const promptResponse = prompt("Enter room code!");
+    if(promptResponse === null) { return; }
+    firebase.firestore().collection("multiplayer").doc(promptResponse).get().then(document=> {
+      if(document.data() === undefined) {
+        alert("Bro that that is invalid code!");
+      } else {
+        firebase.firestore().collection("multiplayer").doc(promptResponse).set({
+          "user2Id": user.uid,
+        }).catch((error) => {
+          console.log(error)
+          return;
+        });
+        setOnlineP2(user.uid);
+      }
+    });
+  }
+
   function generateGrid() {
     const dice = ["AAAFRS", "AAEEEE", "AAFIRS", "ADENNN", "AEEEEM",
       "AEEGMU", "AEGMNN", "AFIRSY", "BJKQXZ", "CCNSTW",
@@ -88,11 +136,28 @@ function App() {
     for (let row = 0; row < SIZE; row++) {
       grid[row] = [];
       for (let col = 0; col < SIZE; ++col) {
-        grid[row][col] = chars[SIZE * row + col]
+        grid[row][col] = chars[SIZE * row + col];
         if (grid[row][col] === "Q") grid[row][col] = "Qu";
       }
     }
     return grid;
+  }
+
+  /**
+   * @return {string}
+   */
+  function gridToString(g) {
+    let result = "";
+    for(const array of g) {
+      for(const element of array) {
+        let char = element;
+        if (char === "Qu") {
+          char = "Q"
+        }
+        result += char;
+      }
+    }
+    return result;
   }
 
     // =========
@@ -116,9 +181,23 @@ function App() {
     <br/><br/>
     <button onClick={ toggleLocalPlayerGame }> { isCurrentlyPlayingGame ? ('Main Menu') : ('New Local Game') } </button>
     <br/><br/>
+    {user !== null && !isCurrentlyPlayingGame &&
+    <>
+      <button onClick={ createRoom }>Create New Multiplayer Room</button>
+      <br/>
+      {onlineCode &&
+        <>
+        <p>Tell your friend to join with the code: <b>{onlineCode}</b><br/> The game will start automatically when the other player is ready.</p>
+        </>
+      }
+      <br/>
+      <button onClick={ joinRoom }>Join Existing Multiplayer Room</button>
+    </>
+    }
     {user === null && !isCurrentlyPlayingGame &&
       <LoginButton setUser={(user) => setUser(user)} />
     }
+    <br/><br/>
     {user !== null && !didPressLoadChallenges && !isCurrentlyPlayingGame &&
       <>
       <button onClick={ loadChallenges }>Load Challenges</button>
