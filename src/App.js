@@ -5,6 +5,7 @@ import { Alert } from 'antd';
 import LoginButton from './components/loginButton.js';
 import FullGameBoard from './components/fullGameBoard';
 import ChallengesResponse from './components/challengesResponse';
+import OnlineResponse from './components/onlineResponse';
 import firebase from 'firebase';
 
 function App() {
@@ -22,8 +23,10 @@ function App() {
 
   const [randomOnlineGrid, setRandomOnlineGrid] = useState(null);
   const [onlineCode, setOnlineCode] = useState(null);
+  const [onlineCodeToJoin, setOnlineCodeToJoin] = useState(null);
   const [onlineP1, setOnlineP1] = useState(null);
   const [onlineP2, setOnlineP2] = useState(null);
+  const [isInOnlineGame, setIsInOnlineGame] = useState(false);
 
   // ===================
   // MARK: - Use Effects
@@ -48,6 +51,7 @@ function App() {
     setIsCurrentlyPlayingGame(!isCurrentlyPlayingGame);
     setSingluarChallengeData(null);
     setGrid(generateGrid());
+    setOnlineCodeToJoin(null);
   }
 
   function toggleChallengeGame(e) {
@@ -93,16 +97,19 @@ function App() {
     if (user == null) { return; }
     const promptResponse = prompt("Enter room code!");
     if(promptResponse === null) { return; }
+
     firebase.firestore().collection("multiplayer").doc(promptResponse).get().then(document=> {
       if(document.data() === undefined) {
         alert("Bro that that is invalid code!");
       } else {
+        // We have a valid code
         firebase.firestore().collection("multiplayer").doc(promptResponse).set({
           "user2Id": user.uid,
-        }).catch((error) => {
+        }, { merge: true }).catch((error) => {
           console.log(error)
           return;
         });
+        setOnlineCodeToJoin(promptResponse);
         setOnlineP2(user.uid);
       }
     });
@@ -190,10 +197,27 @@ function App() {
         <p>Tell your friend to join with the code: <b>{onlineCode}</b><br/> The game will start automatically when the other player is ready.</p>
         </>
       }
-      <br/>
-      <button onClick={ joinRoom }>Join Existing Multiplayer Room</button>
     </>
     }
+    {onlineP1 !== null && onlineCode !== null &&
+      <>
+      <p>Don't Boggle and Drive</p>
+      <OnlineResponse grid={randomOnlineGrid} onlineCode={onlineCode} isPlayer1={true}></OnlineResponse>
+      </>
+    }
+    {user !== null && !isCurrentlyPlayingGame &&
+      <>
+      <br/>
+      <button onClick={ joinRoom }>Join Existing Multiplayer Room</button>
+      {onlineCodeToJoin &&
+        <>
+        <p>Don't Boggle and Drive</p>
+        <OnlineResponse grid={generateGrid()} onlineCode={onlineCodeToJoin} isPlayer1={false}></OnlineResponse>
+        </>
+      }
+      </>
+    }
+
     {user === null && !isCurrentlyPlayingGame &&
       <LoginButton setUser={(user) => setUser(user)} />
     }

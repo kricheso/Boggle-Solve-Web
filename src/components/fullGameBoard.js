@@ -23,6 +23,7 @@ function FullGameBoard(props) {
     const [dictionary, setDictionary] = useState(null);
     const [usersHiscore, setUsersHiscore] = useState(null);
     const [worldRecord, setWorldRecord] = useState(null);
+    const [oppenentsScore, setOppenentsScore] = useState(0);
 
     // =================
     // MARK: - Constants
@@ -60,6 +61,17 @@ function FullGameBoard(props) {
                 }
             });
         }
+        if(props.isPlayer1 === true) {
+            const unsubscribe = firebase.firestore().collection("multiplayer").doc(props.onlineCode).onSnapshot(snapshot=> {
+                setOppenentsScore(snapshot.data().user2Score);
+            });
+            return () => unsubscribe() 
+        } else if(props.isPlayer1 === false) {
+            const unsubscribe = firebase.firestore().collection("multiplayer").doc(props.onlineCode).onSnapshot(snapshot=> {
+                setOppenentsScore(snapshot.data().user1Score);
+            });
+            return () => unsubscribe() 
+        }
     }, []);
 
     useEffect(() => {
@@ -87,6 +99,7 @@ function FullGameBoard(props) {
             let newScore = score + evaluateScore(lastWordInputted);
             setScore(newScore);
             updateUsersScoreOnFirebaseIfNecessary(newScore);
+            updateUsersScoreOnMultiplayerIfNecessary(newScore);
         }
         setIsDisplayingAlreadyUsedWarning(false);
     }, [lastWordInputted, correctAnswers, validWords]);
@@ -95,8 +108,30 @@ function FullGameBoard(props) {
     // MARK: Functions
     // ===============
 
+    function updateUsersScoreOnMultiplayerIfNecessary(score) {
+        if(props.isPlayer1 === undefined) { return; }
+        if(props.onlineCode === undefined || props.onlineCode === null) { return; }
+        if(props.isPlayer1) {
+            firebase.firestore().collection("multiplayer").doc(props.onlineCode).set({
+                "user1Score": score
+            }, { merge: true }).then(() => {
+                console.log("Score written!"); 
+            }).catch((error) => {
+                console.error("Error adding document: ", error); 
+            });
+        } else {
+            firebase.firestore().collection("multiplayer").doc(props.onlineCode).set({
+                "user2Score": score
+            }, { merge: true }).then(() => {
+                console.log("Score written!"); 
+            }).catch((error) => {
+                console.error("Error adding document: ", error); 
+            });
+        }
+    }
+
     function updateUsersScoreOnFirebaseIfNecessary(score) {
-        if(props.singluarChallengeData == null) { return; }
+        if(props.singluarChallengeData === null || props.singluarChallengeData === undefined) { return; }
         if(props.user === null) { return; }
         if(usersHiscore === null) { return; }
         if(worldRecord === null) { return; }
@@ -180,7 +215,8 @@ function FullGameBoard(props) {
 
     return (<>
         <div>
-            {props.singluarChallengeData !== null && <div>Your Hiscore for this challenge: {usersHiscore}</div>}
+            {props.onlineCode !== undefined && <div>Oppenent's Score: {oppenentsScore}</div>}
+            {props.singluarChallengeData && <div>Your Hiscore for this challenge: {usersHiscore}</div>}
             <div>Score: {score}</div>
             <div>Time: {timeLeft}</div>
             {isDisplayingAlreadyUsedWarning && <AlreadyUsed word={lastWordInputted}></AlreadyUsed>}
